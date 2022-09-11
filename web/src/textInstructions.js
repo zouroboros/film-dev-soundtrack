@@ -3,6 +3,7 @@ export const textInstructions = function (options) {
 
     instructions.push({instruction: 'Pour in the developer', time: 0})
     instructions.push({instruction: `Agitate continously for ${options.agitationContinously} seconds`, time: 0})
+    instructions.push({instruction: 'Stop agitation.', time: options.agitationContinously})
     
     const nAgitations = Math.floor(options.developDuration / options.agitationInterval / 60)
 
