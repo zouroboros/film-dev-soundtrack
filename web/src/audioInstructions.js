@@ -53,6 +53,7 @@ export const playInstructions = async function(options) {
   const audioContext = new window.AudioContext();
   const arrayBuffers = await loadArrayBuffers();
   await audioInstructions(audioContext, options, arrayBuffers);
+  return audioContext;
 }
 
 export const downloadInstructions = async function(options) {

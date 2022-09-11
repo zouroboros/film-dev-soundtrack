@@ -9,6 +9,7 @@
 	let agitationInterval = 1;
 	let agitationLength = 10;
 	let currentTextInstructions = [];
+	let activeInstructionTime = 0;
 
 	const readOptions = function() {
 		return {
@@ -18,9 +19,23 @@
 			agitationInterval: agitationInterval };
 	};
 
-	const play = function() {
-		playInstructions(readOptions());
-		updateInstructions();
+	const updateActiveInstruction = function(audioContext) {
+		const ellapsedTime = audioContext.getOutputTimestamp().contextTime
+		const activeInstruction = currentTextInstructions.findIndex(instruction => instruction.time > ellapsedTime)
+		if (activeInstruction > 0) {
+			activeInstructionTime = currentTextInstructions[activeInstruction - 1].time
+		}
+	};
+
+	const play = async function() {
+		currentTextInstructions = textInstructions(readOptions());
+		const audioContext = await playInstructions(readOptions());
+		const animationCallback = function() {
+			updateActiveInstruction(audioContext)
+			window.requestAnimationFrame(animationCallback)
+		}
+
+		animationCallback()
 	};
 	
 	const download = function() {
@@ -31,10 +46,6 @@
 			downloadLink.dispatchEvent(new MouseEvent('click'));
 		})
 	};
-
-	const updateInstructions = function() {
-		currentTextInstructions = textInstructions(readOptions());
-	}
 
 	const formateMinutesAndSeconds = (seconds) => new Intl.DateTimeFormat(navigator.language, {minute: '2-digit', second: '2-digit'}).format(new Date(seconds * 1000));
 </script>
@@ -51,7 +62,9 @@
 	<button on:click="{download}">Download</button>
 	<ol class="instructions">
 		{#each currentTextInstructions as instruction}
-			<li><span>{formateMinutesAndSeconds(instruction.time)}</span> {instruction.instruction}</li>			
+			<li class:active={instruction.time === activeInstructionTime}>
+				<span>{formateMinutesAndSeconds(instruction.time)}</span> {instruction.instruction}
+			</li>			
 		{/each}
 	</ol>
 </main>
@@ -64,4 +77,9 @@ input {
 .instructions li span:first-child {
 	font-family: monospace, monospace;
 }
+
+.instructions li.active {
+	font-weight: bold;
+}
+
 </style>
